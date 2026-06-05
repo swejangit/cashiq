@@ -4,8 +4,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import sqlite3
 from datetime import datetime
-
+import db_init
 import models
+
+app = Flask(__name__)
+
+db_init.init_db()
+
 
 app = Flask(__name__, static_folder='static')
 app.secret_key = 'cashiq_super_secret_session_key_for_dev_only'
