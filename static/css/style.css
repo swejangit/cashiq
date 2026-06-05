@@ -1,0 +1,176 @@
+/* Custom Styling for Cashiq — Premium Light Theme */
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #F8FAFC;
+}
+::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #8B5CF6;
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* Keyframes for animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%) translateY(0);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    from {
+        transform: translateY(12px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes scaleUp {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Animation utilities */
+.animate-slide-in {
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-out {
+    animation: slideOutRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-up {
+    animation: scaleUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Status ring animation */
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 0px rgba(139, 92, 246, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(139, 92, 246, 0);
+    }
+}
+
+.pulse-glow {
+    animation: pulseGlow 2s infinite;
+}
+
+/* Premium Card hover glowing outline */
+.glow-card {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glow-card:hover {
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.08), 0 8px 16px -6px rgba(139, 92, 246, 0.04);
+    transform: translateY(-2px);
+}
+
+/* Status styles for budget cards */
+.status-indicator-safe {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.status-indicator-warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #D97706;
+    border: 1px solid rgba(245, 158, 11, 0.15);
+}
+
+.status-indicator-danger {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #DC2626;
+    border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+/* Custom styles for ApexCharts tooltips to match light theme */
+.apexcharts-tooltip.apexcharts-theme-light {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 10px 20px -10px rgba(0,0,0,0.12) !important;
+    border-radius: 8px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    color: #1E293B !important;
+}
+
+.apexcharts-tooltip-title {
+    background: #F8FAFC !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    font-weight: 700 !important;
+    padding: 8px 12px !important;
+    color: #0F172A !important;
+}
+
+.apexcharts-xaxistooltip.apexcharts-theme-light {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    color: #64748B !important;
+    border-radius: 6px !important;
+}
+
+/* Date and Month pickers */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="month"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}

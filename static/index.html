@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashiq — Premium Personal Finance</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Outfit', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        },
+                        successGreen: '#10B981',
+                        warningOrange: '#F59E0B',
+                        dangerRed: '#EF4444',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- ApexCharts (Premium UI charting) -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased min-h-screen overflow-x-hidden font-sans">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-md w-full pointer-events-none"></div>
+
+    <!-- Main Application Container -->
+    <div id="app" class="min-h-screen flex flex-col">
+        <!-- Spinner Overlay -->
+        <div id="app-loading" class="fixed inset-0 bg-slate-50 z-50 flex flex-col items-center justify-center">
+            <div class="relative w-16 h-16">
+                <div class="absolute inset-0 rounded-full border-4 border-slate-200 border-t-brand-500 animate-spin"></div>
+            </div>
+            <p class="mt-4 text-slate-500 font-medium tracking-wide">Initializing Cashiq...</p>
+        </div>
+
+        <!-- AUTH SCREEN (Login & Signup combined state) -->
+        <div id="auth-screen" class="hidden min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 via-slate-100 to-brand-100/30">
+            <div class="w-full max-w-md bg-white border border-slate-200/80 rounded-2xl p-8 shadow-2xl relative overflow-hidden transition-all duration-300 transform scale-95 opacity-0">
+                
+                <!-- Glowing Orb Background -->
+                <div class="absolute -top-12 -right-12 w-36 h-36 bg-brand-500/10 rounded-full blur-2xl"></div>
+                <div class="absolute -bottom-12 -left-12 w-36 h-36 bg-blue-500/10 rounded-full blur-2xl"></div>
+
+                <div class="text-center mb-8 relative">
+                    <div class="inline-flex items-center justify-center p-3 bg-brand-500/10 rounded-xl mb-3 text-brand-600 border border-brand-500/10">
+                        <i data-lucide="wallet" class="w-8 h-8"></i>
+                    </div>
+                    <h1 class="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-brand-600">Cashiq</h1>
+                    <p id="auth-subtitle" class="text-sm text-slate-500 mt-1">Your Premium Personal Finance Companion</p>
+                </div>
+
+                <!-- LOGIN FORM -->
+                <form id="login-form" class="space-y-5">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5">Username or Email</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i data-lucide="user" class="w-4.5 h-4.5"></i></span>
+                            <input type="text" id="login-username" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition duration-200 placeholder-slate-400 text-slate-900" placeholder="admin or email">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1.5">Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i data-lucide="lock" class="w-4.5 h-4.5"></i></span>
+                            <input type="password" id="login-password" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition duration-200 placeholder-slate-400 text-slate-900" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-semibold rounded-xl transition duration-200 shadow-lg shadow-brand-500/20 active:scale-[0.98]">
+                        Sign In
+                    </button>
+                    <p class="text-center text-xs text-slate-500 mt-4">
+                        Don't have an account? <a href="#" id="to-signup-btn" class="text-brand-600 hover:underline font-semibold">Sign up</a>
+                    </p>
+                </form>
+
+                <!-- SIGNUP FORM -->
+                <form id="signup-form" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Username</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i data-lucide="user" class="w-4.5 h-4.5"></i></span>
+                            <input type="text" id="signup-username" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition duration-200 placeholder-slate-400 text-slate-900" placeholder="john_doe">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Email Address</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i data-lucide="mail" class="w-4.5 h-4.5"></i></span>
+                            <input type="email" id="signup-email" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition duration-200 placeholder-slate-400 text-slate-900" placeholder="john@example.com">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Mobile Number</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i data-lucide="phone" class="w-4.5 h-4.5"></i></span>
+                            <input type="tel" id="signup-mobile" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition duration-200 placeholder-slate-400 text-slate-900" placeholder="9876543210">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i data-lucide="lock" class="w-4.5 h-4.5"></i></span>
+                            <input type="password" id="signup-password" required minlength="6" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition duration-200 placeholder-slate-400 text-slate-900" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-semibold rounded-xl transition duration-200 shadow-lg shadow-brand-500/20 active:scale-[0.98]">
+                        Create Account
+                    </button>
+                    <p class="text-center text-xs text-slate-500 mt-4">
+                        Already have an account? <a href="#" id="to-login-btn" class="text-brand-600 hover:underline font-semibold">Sign in</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <!-- APP CONTENT SCREEN (Dashboard & Main view) -->
+        <div id="main-screen" class="hidden min-h-screen flex flex-col md:flex-row bg-slate-50">
+            
+            <!-- SIDEBAR -->
+            <aside class="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-slate-200/80 flex flex-col flex-shrink-0 z-30">
+                <!-- Sidebar Header -->
+                <div class="p-6 flex items-center justify-between border-b border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-gradient-to-tr from-brand-600 to-brand-500 rounded-lg text-white">
+                            <i data-lucide="wallet" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-xl font-bold tracking-tight text-slate-950 font-outfit">Cashiq</span>
+                    </div>
+                    <!-- Mobile Nav Toggle button -->
+                    <button id="mobile-nav-toggle" class="md:hidden p-2 hover:bg-slate-50 rounded-lg text-slate-500 focus:outline-none">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav id="sidebar-nav" class="flex-1 px-4 py-6 space-y-1.5 hidden md:block overflow-y-auto">
+                    <a href="#" data-view="dashboard" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group text-brand-600 bg-brand-50 border-l-2 border-brand-500">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5 transition-transform duration-200 group-hover:scale-105"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" data-view="transactions" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group text-slate-600 hover:text-slate-950 hover:bg-slate-50">
+                        <i data-lucide="arrow-right-left" class="w-5 h-5 transition-transform duration-200 group-hover:scale-105"></i>
+                        <span>Transactions</span>
+                    </a>
+                    <a href="#" data-view="planning" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group text-slate-600 hover:text-slate-950 hover:bg-slate-50">
+                        <i data-lucide="sliders" class="w-5 h-5 transition-transform duration-200 group-hover:scale-105"></i>
+                        <span>Budget Planning</span>
+                    </a>
+                    <a href="#" data-view="debts" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group text-slate-600 hover:text-slate-950 hover:bg-slate-50">
+                        <i data-lucide="coins" class="w-5 h-5 transition-transform duration-200 group-hover:scale-105"></i>
+                        <span>Debts</span>
+                    </a>
+                    <a href="#" data-view="reports" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group text-slate-600 hover:text-slate-950 hover:bg-slate-50">
+                        <i data-lucide="trending-up" class="w-5 h-5 transition-transform duration-200 group-hover:scale-105"></i>
+                        <span>Reports & Charts</span>
+                    </a>
+                    <a href="#" data-view="settings" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group text-slate-600 hover:text-slate-950 hover:bg-slate-50">
+                        <i data-lucide="settings" class="w-5 h-5 transition-transform duration-200 group-hover:scale-105"></i>
+                        <span>Settings</span>
+                    </a>
+                    <!-- Hidden Admin navigation link (controlled by JS) -->
+                    <a href="#" id="admin-nav-link" data-view="admin" class="hidden flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group text-red-600 hover:text-red-800 hover:bg-red-50 border-l-2 border-transparent hover:border-red-500">
+                        <i data-lucide="shield-check" class="w-5 h-5 transition-transform duration-200 group-hover:scale-105"></i>
+                        <span>Admin Console</span>
+                    </a>
+                </nav>
+
+                <!-- Sidebar User Footer -->
+                <div class="p-4 border-t border-slate-100 flex items-center justify-between">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <div class="w-9 h-9 rounded-full bg-brand-600 flex items-center justify-center text-white font-bold font-outfit text-sm flex-shrink-0" id="user-avatar">
+                            U
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="text-xs font-semibold text-slate-800 truncate" id="user-display-name">Username</p>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold" id="user-display-role">User</p>
+                        </div>
+                    </div>
+                    <button id="logout-btn" class="p-2 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-dangerRed transition-colors focus:outline-none" title="Log Out">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- MAIN WORKSPACE -->
+            <main class="flex-1 flex flex-col min-w-0 overflow-y-auto h-screen relative bg-slate-50">
+                <!-- Workspace Header -->
+                <header class="h-16 border-b border-slate-200/80 px-6 md:px-8 flex items-center justify-between flex-shrink-0 bg-white/80 backdrop-blur-md sticky top-0 z-20 shadow-sm shadow-slate-100/40">
+                    <div>
+                        <h2 id="view-title" class="text-lg font-bold text-slate-900 font-outfit">Dashboard</h2>
+                        <p id="view-subtitle" class="text-xs text-slate-500 hidden md:block">Welcome back to Cashiq</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <!-- Date Display -->
+                        <div class="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
+                            <i data-lucide="calendar" class="w-4 h-4 text-brand-500"></i>
+                            <span id="current-date-str">June 5, 2026</span>
+                        </div>
+                        
+                        <!-- Floating trigger transaction button -->
+                        <button id="quick-add-transaction-btn" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-semibold rounded-lg text-sm transition-all duration-200 shadow-md shadow-brand-500/10 hover:shadow-brand-500/20 active:scale-95">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Log Transaction</span>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Workspace Dynamic Views Container -->
+                <div id="views-container" class="flex-1 p-6 md:p-8 space-y-8">
+                    <!-- HTML content dynamically injected by app.js -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- TRANSACTION MODAL -->
+    <div id="transaction-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" id="close-modal-backdrop"></div>
+        
+        <!-- Modal Card -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative overflow-hidden z-10 transform scale-95 opacity-0 transition-all duration-300">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-1.5 bg-brand-500/10 text-brand-600 rounded-lg">
+                        <i data-lucide="banknote" class="w-5 h-5"></i>
+                    </div>
+                    <h3 id="modal-title" class="text-base font-bold text-slate-900 font-outfit">Log Transaction</h3>
+                </div>
+                <button class="text-slate-400 hover:text-slate-900 transition-colors focus:outline-none" id="close-modal-x">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <form id="transaction-form" class="space-y-4">
+                <input type="hidden" id="edit-tx-id">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Transaction Type</label>
+                        <select id="tx-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800">
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Amount (₹)</label>
+                        <input type="number" step="any" min="0.01" id="tx-amount" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800 placeholder-slate-400" placeholder="0.00">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Category</label>
+                        <select id="tx-category" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Payment Method</label>
+                        <select id="tx-payment" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800">
+                            <option value="UPI">UPI</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Card">Card</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Transaction Date</label>
+                        <input type="date" id="tx-date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Note / Description</label>
+                        <input type="text" id="tx-note" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800 placeholder-slate-400" placeholder="Dinner with friends">
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button type="button" id="cancel-tx-btn" class="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-900 text-sm font-semibold rounded-xl transition duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white text-sm font-semibold rounded-xl shadow-lg shadow-brand-500/10 hover:shadow-brand-500/20 transition duration-200">
+                        Save Transaction
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BUDGET MODAL -->
+    <div id="budget-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" id="close-budget-backdrop"></div>
+        
+        <!-- Modal Card -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden z-10 transform scale-95 opacity-0 transition-all duration-300">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-1.5 bg-brand-500/10 text-brand-600 rounded-lg">
+                        <i data-lucide="sliders" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 font-outfit">Set Category Budget</h3>
+                </div>
+                <button class="text-slate-400 hover:text-slate-900 transition-colors focus:outline-none" id="close-budget-x">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <form id="budget-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Expense Category</label>
+                    <select id="budget-category" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800">
+                        <!-- Expense categories only populated here -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Target Month</label>
+                    <input type="month" id="budget-month" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Planned Amount (₹)</label>
+                    <input type="number" step="any" min="1" id="budget-amount" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800 placeholder-slate-400" placeholder="1000">
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button type="button" id="cancel-budget-btn" class="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-900 text-sm font-semibold rounded-xl transition duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white text-sm font-semibold rounded-xl shadow-lg shadow-brand-500/10 hover:shadow-brand-500/20 transition duration-200">
+                        Save Budget
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DEBT MODAL -->
+    <div id="debt-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" id="close-debt-backdrop"></div>
+        
+        <!-- Modal Card -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden z-10 transform scale-95 opacity-0 transition-all duration-300">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-1.5 bg-brand-500/10 text-brand-600 rounded-lg">
+                        <i data-lucide="coins" class="w-5 h-5"></i>
+                    </div>
+                    <h3 id="debt-modal-title" class="text-base font-bold text-slate-900 font-outfit">Add Debt Record</h3>
+                </div>
+                <button class="text-slate-400 hover:text-slate-900 transition-colors focus:outline-none" id="close-debt-x">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <form id="debt-form" class="space-y-4">
+                <input type="hidden" id="edit-debt-id">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Person Name</label>
+                    <input type="text" id="debt-person" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800 placeholder-slate-400" placeholder="e.g. Alice Smith">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Total Amount (₹)</label>
+                        <input type="number" step="any" min="0.01" id="debt-total" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800 placeholder-slate-400" placeholder="e.g. 5000">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Pending Amount (₹)</label>
+                        <input type="number" step="any" min="0" id="debt-pending" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800 placeholder-slate-400" placeholder="e.g. 5000">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Due Date</label>
+                        <input type="date" id="debt-due" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Status</label>
+                        <select id="debt-status" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800">
+                            <option value="Active">Active</option>
+                            <option value="Paid">Paid</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Notes</label>
+                    <input type="text" id="debt-notes" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800 placeholder-slate-400" placeholder="e.g. Borrowed for concert tickets">
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button type="button" id="cancel-debt-btn" class="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-900 text-sm font-semibold rounded-xl transition duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white text-sm font-semibold rounded-xl shadow-lg shadow-brand-500/10 hover:shadow-brand-500/20 transition duration-200">
+                        Save Debt
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CATEGORY MODAL -->
+    <div id="category-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" id="close-category-backdrop"></div>
+        
+        <!-- Modal Card -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden z-10 transform scale-95 opacity-0 transition-all duration-300">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-1.5 bg-brand-500/10 text-brand-600 rounded-lg">
+                        <i data-lucide="tag" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 font-outfit">Add Custom Category</h3>
+                </div>
+                <button class="text-slate-400 hover:text-slate-900 transition-colors focus:outline-none" id="close-category-x">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <form id="category-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Category Type</label>
+                    <select id="new-cat-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800">
+                        <option value="expense">Expense Category</option>
+                        <option value="income">Income Category</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Category Name</label>
+                    <input type="text" id="new-cat-name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800 placeholder-slate-400" placeholder="e.g. Subscriptions">
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button type="button" id="cancel-category-btn" class="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-900 text-sm font-semibold rounded-xl transition duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white text-sm font-semibold rounded-xl shadow-lg shadow-brand-500/10 hover:shadow-brand-500/20 transition duration-200">
+                        Create Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom JavaScript App file -->
+    <script src="js/app.js"></script>
+</body>
+</html>
