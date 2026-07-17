@@ -29,14 +29,22 @@ def seed_db():
     ]
     
     for user_id, name, cat_type in default_categories:
-        try:
+        if user_id is None:
+            exists = cursor.execute(
+                'SELECT 1 FROM categories WHERE user_id IS NULL AND name = ? AND type = ?',
+                (name, cat_type)
+            ).fetchone()
+        else:
+            exists = cursor.execute(
+                'SELECT 1 FROM categories WHERE user_id = ? AND name = ? AND type = ?',
+                (user_id, name, cat_type)
+            ).fetchone()
+            
+        if not exists:
             cursor.execute(
                 'INSERT INTO categories (user_id, name, type) VALUES (?, ?, ?)',
                 (user_id, name, cat_type)
             )
-        except sqlite3.IntegrityError:
-            # Category already exists
-            pass
             
     conn.commit()
     conn.close()

@@ -184,9 +184,21 @@
                         <i data-lucide="coins" class="w-5 h-5 transition-transform duration-200 group-hover:scale-105"></i>
                         <span>Debts</span>
                     </a>
+                    <a href="#" data-view="receivables" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group text-slate-600 hover:text-slate-950 hover:bg-slate-50">
+                        <i data-lucide="piggy-bank" class="w-5 h-5 transition-transform duration-200 group-hover:scale-105"></i>
+                        <span>Receivables</span>
+                    </a>
+                    <a href="#" data-view="events" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group text-slate-600 hover:text-slate-950 hover:bg-slate-50">
+                        <i data-lucide="calendar" class="w-5 h-5 transition-transform duration-200 group-hover:scale-105"></i>
+                        <span>Events</span>
+                    </a>
                     <a href="#" data-view="reports" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group text-slate-600 hover:text-slate-950 hover:bg-slate-50">
                         <i data-lucide="trending-up" class="w-5 h-5 transition-transform duration-200 group-hover:scale-105"></i>
                         <span>Reports & Charts</span>
+                    </a>
+                    <a href="#" data-view="trash" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group text-slate-600 hover:text-slate-950 hover:bg-slate-50">
+                        <i data-lucide="trash-2" class="w-5 h-5 transition-transform duration-200 group-hover:scale-105"></i>
+                        <span>Trash</span>
                     </a>
                     <a href="#" data-view="settings" class="flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group text-slate-600 hover:text-slate-950 hover:bg-slate-50">
                         <i data-lucide="settings" class="w-5 h-5 transition-transform duration-200 group-hover:scale-105"></i>
@@ -222,7 +234,7 @@
                 <header class="h-16 border-b border-slate-200/80 px-6 md:px-8 flex items-center justify-between flex-shrink-0 bg-white/80 backdrop-blur-md sticky top-0 z-20 shadow-sm shadow-slate-100/40">
                     <div>
                         <h2 id="view-title" class="text-lg font-bold text-slate-900 font-outfit">Dashboard</h2>
-                        <p id="view-subtitle" class="text-xs text-slate-500 hidden md:block">Welcome back to Cashiq</p>
+                        <p id="view-subtitle" class="text-xs text-slate-500 hidden md:block"></p>
                     </div>
                     <div class="flex items-center gap-4">
                         <!-- Date Display -->
@@ -313,6 +325,13 @@
                     </div>
                 </div>
 
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Associate Event</label>
+                    <select id="tx-event" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800">
+                        <option value="">None (Personal)</option>
+                    </select>
+                </div>
+
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
                     <button type="button" id="cancel-tx-btn" class="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-900 text-sm font-semibold rounded-xl transition duration-200">
                         Cancel
@@ -393,6 +412,7 @@
             
             <form id="debt-form" class="space-y-4">
                 <input type="hidden" id="edit-debt-id">
+                <input type="hidden" id="debt-type-hidden">
                 <div>
                     <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Person Name</label>
                     <input type="text" id="debt-person" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800 placeholder-slate-400" placeholder="e.g. Alice Smith">
@@ -481,6 +501,173 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- LEDGER ENTRY MODAL -->
+    <div id="ledger-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" id="close-ledger-backdrop"></div>
+        
+        <!-- Modal Card -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden z-10 transform scale-95 opacity-0 transition-all duration-300">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-1.5 bg-brand-500/10 text-brand-600 rounded-lg">
+                        <i data-lucide="book-open" class="w-5 h-5"></i>
+                    </div>
+                    <h3 id="ledger-modal-title" class="text-base font-bold text-slate-900 font-outfit">Add Ledger Entry</h3>
+                </div>
+                <button class="text-slate-400 hover:text-slate-900 transition-colors focus:outline-none" id="close-ledger-x">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <form id="ledger-form" class="space-y-4">
+                <input type="hidden" id="edit-ledger-id">
+                <input type="hidden" id="ledger-debt-id">
+                
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Entry Type</label>
+                    <select id="ledger-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Amount (₹)</label>
+                    <input type="number" step="any" min="0.01" id="ledger-amount" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800 placeholder-slate-400" placeholder="e.g. 1000">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Date</label>
+                        <input type="date" id="ledger-date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Associate Event</label>
+                        <select id="ledger-event" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800">
+                            <option value="">None (Personal)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Notes / Description</label>
+                    <input type="text" id="ledger-notes" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800 placeholder-slate-400" placeholder="e.g. Borrowed extra cash">
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button type="button" id="cancel-ledger-btn" class="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-900 text-sm font-semibold rounded-xl transition duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white text-sm font-semibold rounded-xl shadow-lg shadow-brand-500/10 hover:shadow-brand-500/20 transition duration-200">
+                        Save Entry
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EVENT MODAL -->
+    <div id="event-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" id="close-event-backdrop"></div>
+        
+        <!-- Modal Card -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden z-10 transform scale-95 opacity-0 transition-all duration-300">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-1.5 bg-brand-500/10 text-brand-600 rounded-lg">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                    </div>
+                    <h3 id="event-modal-title" class="text-base font-bold text-slate-900 font-outfit">Create Event</h3>
+                </div>
+                <button class="text-slate-400 hover:text-slate-900 transition-colors focus:outline-none" id="close-event-x">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <form id="event-form" class="space-y-4">
+                <input type="hidden" id="edit-event-id">
+                
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Event Name</label>
+                    <input type="text" id="event-name-input" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800 placeholder-slate-400" placeholder="e.g. Birthday Party, Summer Trip">
+                </div>
+
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Description</label>
+                    <textarea id="event-desc-input" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500 text-slate-800 placeholder-slate-400" placeholder="e.g. Budget planning for summer trip with friends"></textarea>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button type="button" id="cancel-event-btn" class="px-5 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-900 text-sm font-semibold rounded-xl transition duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white text-sm font-semibold rounded-xl shadow-lg shadow-brand-500/10 hover:shadow-brand-500/20 transition duration-200">
+                        Save Event
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TRANSACTION DETAILS MODAL -->
+    <div id="tx-details-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" id="close-tx-details-backdrop"></div>
+        
+        <!-- Modal Card -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden z-10 transform scale-95 opacity-0 transition-all duration-300">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-1.5 bg-brand-500/10 text-brand-600 rounded-lg">
+                        <i data-lucide="info" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900 font-outfit">Transaction Details</h3>
+                </div>
+                <button class="text-slate-400 hover:text-slate-900 transition-colors focus:outline-none" id="close-tx-details-x">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 text-sm text-slate-600">
+                <div class="flex justify-between py-2 border-b border-slate-50">
+                    <span class="font-medium text-slate-400">Description / Note:</span>
+                    <span id="dt-note" class="font-bold text-slate-800 text-right"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-slate-50">
+                    <span class="font-medium text-slate-400">Amount:</span>
+                    <span id="dt-amount" class="font-extrabold text-base text-right"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-slate-50">
+                    <span class="font-medium text-slate-400">Type:</span>
+                    <span id="dt-type" class="font-bold text-right uppercase tracking-wider text-xs px-2 py-0.5 rounded-full"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-slate-50">
+                    <span class="font-medium text-slate-400">Category:</span>
+                    <span id="dt-category" class="font-bold text-slate-800 text-right"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-slate-50">
+                    <span class="font-medium text-slate-400">Date:</span>
+                    <span id="dt-date" class="font-bold text-slate-800 text-right"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-slate-50">
+                    <span class="font-medium text-slate-400">Payment Method:</span>
+                    <span id="dt-method" class="font-bold text-slate-800 text-right"></span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-slate-50" id="dt-event-row">
+                    <span class="font-medium text-slate-400">Linked Event:</span>
+                    <span id="dt-event" class="font-bold text-brand-600 text-right"></span>
+                </div>
+            </div>
+            
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-end mt-5">
+                <button type="button" id="close-tx-details-btn" class="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition duration-200">
+                    Close
+                </button>
+            </div>
         </div>
     </div>
 

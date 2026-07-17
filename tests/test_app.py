@@ -265,9 +265,9 @@ class CashiqTestCase(unittest.TestCase):
             'person_name': 'Frank Miller',
             'total_amount': 3000.00,
             'pending_amount': 3000.00,
-            'due_date': '2026-07-01',
+            'due_date': '2036-07-01',
             'status': 'Active',
-            'notes': '[LENT] Concert tickets'
+            'notes': '[BORROWED] Concert tickets'
         })
         self.assertEqual(res.status_code, 201)
         debt_id = json.loads(res.data)['id']
@@ -284,9 +284,9 @@ class CashiqTestCase(unittest.TestCase):
             'person_name': 'Frank Miller',
             'total_amount': 3000.00,
             'pending_amount': 1000.00,
-            'due_date': '2026-07-01',
+            'due_date': '2036-07-01',
             'status': 'Active',
-            'notes': '[LENT] Concert tickets (Paid part)'
+            'notes': '[BORROWED] Concert tickets (Paid part)'
         })
         self.assertEqual(res.status_code, 200)
         
@@ -301,9 +301,9 @@ class CashiqTestCase(unittest.TestCase):
             'person_name': 'Frank Miller',
             'total_amount': 3000.00,
             'pending_amount': 0.00,
-            'due_date': '2026-07-01',
+            'due_date': '2036-07-01',
             'status': 'Active', # The API should auto-set to 'Paid' when pending is 0
-            'notes': '[LENT] Concert tickets (Fully paid)'
+            'notes': '[BORROWED] Concert tickets (Fully paid)'
         })
         self.assertEqual(res.status_code, 200)
 
@@ -394,6 +394,133 @@ class CashiqTestCase(unittest.TestCase):
         user_detail = json.loads(res.data)
         self.assertTrue(user_detail['success'])
         self.assertEqual(user_detail['user']['username'], 'george')
+
+    # 7. Test PFMS Extensions (Step 5)
+    def test_pfms_extensions(self):
+        # Setup session
+        self.register('extension_user', 'ext@test.com', '1234567890', 'password123')
+        self.login('extension_user', 'password123')
+
+        # Test Event creation
+        res = self.client.post('/api/events', json={
+            'name': 'Summer Trip',
+            'description': 'Trip with high school friends'
+        })
+        self.assertEqual(res.status_code, 201)
+        event_id = json.loads(res.data)['id']
+
+        # Get Event details
+        res = self.client.get(f'/api/events/{event_id}/details')
+        self.assertEqual(res.status_code, 200)
+        details = json.loads(res.data)['data']
+        self.assertEqual(details['event']['name'], 'Summer Trip')
+        self.assertEqual(details['stats']['total_spent'], 0)
+
+        # Create a transaction linked to the event
+        res = self.client.get('/api/categories')
+        categories = json.loads(res.data)['data']
+        food_cat = next(c for c in categories if c['name'] == 'Food & Dining')
+        
+        res = self.client.post('/api/transactions', json={
+            'amount': 800.00,
+            'type': 'expense',
+            'category_id': food_cat['id'],
+            'note': 'Dinner at Highway Inn',
+            'payment_method': 'UPI',
+            'transaction_date': '2026-06-20',
+            'event_id': event_id
+        })
+        self.assertEqual(res.status_code, 201)
+
+        # Create a debt (smart-merge test 1)
+        res = self.client.post('/api/debts', json={
+            'person_name': 'John Doe',
+            'total_amount': 2000.00,
+            'due_date': '2026-07-15',
+            'notes': '[BORROWED] For hotel booking',
+            'type': 'debt',
+            'event_id': event_id
+        })
+        self.assertEqual(res.status_code, 201)
+        debt_id = json.loads(res.data)['id']
+
+        # Create another debt for same person (smart-merge merge test)
+        res = self.client.post('/api/debts', json={
+            'person_name': 'John Doe',
+            'total_amount': 1500.00,
+            'due_date': '2026-07-18',
+            'notes': '[BORROWED] For taxi fare',
+            'type': 'debt',
+            'event_id': event_id
+        })
+        self.assertEqual(res.status_code, 201)
+        # Should be same ID
+        self.assertEqual(json.loads(res.data)['id'], debt_id)
+
+        # Fetch ledger list
+        res = self.client.get(f'/api/debts/{debt_id}')
+        self.assertEqual(res.status_code, 200)
+        debt_details = json.loads(res.data)['data']
+        self.assertEqual(len(debt_details['ledger']), 2)
+        self.assertEqual(debt_details['total_amount'], 3500.00)
+        self.assertEqual(debt_details['pending_amount'], 3500.00)
+
+        # Log repayment inside ledger
+        res = self.client.post(f'/api/debts/{debt_id}/ledger', json={
+            'type': 'repaid',
+            'amount': 1000.00,
+            'entry_date': '2026-06-21',
+            'notes': 'Paid back half of taxi'
+        })
+        self.assertEqual(res.status_code, 201)
+
+        # Verify balance updated
+        res = self.client.get(f'/api/debts/{debt_id}')
+        debt_details = json.loads(res.data)['data']
+        self.assertEqual(debt_details['pending_amount'], 2500.00)
+
+        # Test Trash bin logic (Soft Delete)
+        txs = self.client.get('/api/transactions').get_json()['data']
+        tx_id = txs[0]['id']
+
+        # Soft delete transaction
+        res = self.client.delete(f'/api/transactions/{tx_id}')
+        self.assertEqual(res.status_code, 200)
+
+        # Check not returned in transactions list
+        txs_after = self.client.get('/api/transactions').get_json()['data']
+        self.assertEqual(len(txs_after), 0)
+
+        # Check present in Trash
+        res = self.client.get('/api/trash')
+        self.assertEqual(res.status_code, 200)
+        trash_data = json.loads(res.data)['data']
+        self.assertEqual(len(trash_data['transactions']), 1)
+        self.assertEqual(trash_data['transactions'][0]['id'], tx_id)
+
+        # Restore from Trash
+        res = self.client.post(f'/api/trash/restore/transaction/{tx_id}')
+        self.assertEqual(res.status_code, 200)
+
+        # Check restored back
+        txs_restored = self.client.get('/api/transactions').get_json()['data']
+        self.assertEqual(len(txs_restored), 1)
+
+        # Test Event Freeze
+        res = self.client.post(f'/api/events/{event_id}/complete', json={})
+        self.assertEqual(res.status_code, 200)
+
+        # Attempt to add transaction to frozen event (should fail)
+        res = self.client.post('/api/transactions', json={
+            'amount': 100.00,
+            'type': 'expense',
+            'category_id': food_cat['id'],
+            'note': 'Snacks',
+            'payment_method': 'UPI',
+            'transaction_date': '2026-06-22',
+            'event_id': event_id
+        })
+        self.assertEqual(res.status_code, 400)
 
 if __name__ == '__main__':
     unittest.main()
